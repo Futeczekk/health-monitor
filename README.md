@@ -1,51 +1,62 @@
-# VPS Health Monitor
+# Health Monitor
 
-A simple Dockerized Flask application for monitoring basic VPS health information.
+A simple health monitor for checking basic server information from one place.
 
-The project exposes a small web dashboard and a `/health` endpoint that returns basic server/application status in JSON format.
+I created this project mainly for myself, because I wanted to have a small and simple tool for quickly checking the condition of my server.  
+Currently, I use it on a VPS, but in the future I would like to move similar services to a Raspberry Pi and use it as a small home/lab server.
 
-This repository was created as a practical DevOps learning project focused on:
+The idea is simple:
 
-- Linux
-- Python
-- Flask
-- Docker
-- Docker Compose
-- Jenkins CI
-- Git and GitHub
+```text
+open one page → check if the server is alive → see basic system status
+```
 
-## Project Description
+This project is intentionally lightweight. It is not meant to replace advanced monitoring tools.  
+It is just a practical tool that gives me quick information about the machine where it is running.
 
-VPS Health Monitor is a lightweight Flask application that displays basic information about the server where it is running.
+## What It Does
 
-The application can be useful as a small internal monitoring tool or as a simple healthcheck service for a VPS.
-
-It shows information such as:
+The application shows basic server and application information, such as:
 
 - hostname
-- operating system
-- kernel version
+- operating system information
 - application uptime
 - RAM usage
 - disk usage
+- basic health status
 
-The project is containerized with Docker and can be started using Docker Compose.
+It also exposes a `/health` endpoint that returns the status in JSON format.
 
-It also includes a Jenkins pipeline that builds the Docker image and checks if the application starts correctly.
+## Why I Made This
+
+I wanted to have a simple place where I can quickly check the health of my server without logging in over SSH every time.
+
+For now, the project runs on a VPS.  
+Later, I plan to use a Raspberry Pi as a small server for my own projects, so this application can also be useful there.
+
+Possible use cases:
+
+- checking if the server is running
+- checking basic RAM and disk usage
+- using `/health` as a simple status endpoint
+- using it on a VPS, Raspberry Pi or small homelab server
+- connecting it later with other scripts or tools
 
 ## Features
 
-- Simple Flask web dashboard
-- `/health` endpoint returning JSON
-- Basic VPS statistics
-- Dockerfile for building the application image
-- Docker Compose configuration
-- Jenkins CI pipeline
-- Automatic container restart policy using Docker Compose
+- simple Flask web application
+- web dashboard
+- `/health` JSON endpoint
+- RAM usage information
+- disk usage information
+- uptime information
+- Docker support
+- Docker Compose support
+- Jenkins pipeline for basic build and healthcheck testing
 
 ## Tech Stack
 
-- Python 3.12
+- Python
 - Flask
 - psutil
 - Docker
@@ -67,121 +78,45 @@ It also includes a Jenkins pipeline that builds the Docker image and checks if t
 └── README.md
 ```
 
-## Application Endpoints
+## Endpoints
 
-### Web Dashboard
+### Dashboard
 
 ```text
 /
 ```
 
-Displays a simple HTML dashboard with basic VPS information.
+Displays a simple web dashboard with basic server information.
 
-### Healthcheck Endpoint
+### Health Endpoint
 
 ```text
 /health
 ```
 
-Returns application health and basic system stats in JSON format.
+Returns basic health information in JSON format.
 
 Example response:
 
 ```json
 {
-  "disk_used_percent": 42.1,
-  "hostname": "server-name",
-  "ram_used_percent": 35.7,
-  "service": "vps-health-monitor",
   "status": "ok",
-  "uptime_seconds": 120
+  "service": "vps-health-monitor",
+  "hostname": "server-name",
+  "uptime_seconds": 120,
+  "ram_used_percent": 35.7,
+  "disk_used_percent": 42.1
 }
 ```
 
-## How to Run the Project
+## Run with Docker Compose
 
-### 1. Clone the Repository
+Clone the repository:
 
 ```bash
 git clone https://github.com/Futeczekk/health-monitor.git
 cd health-monitor
 ```
-
-### 2. Run with Docker Compose
-
-```bash
-docker compose up -d --build
-```
-
-### 3. Open the Application
-
-In a browser:
-
-```text
-http://localhost
-```
-
-or on a VPS:
-
-```text
-http://your-server-ip
-```
-
-### 4. Test the Health Endpoint
-
-```bash
-curl http://localhost/health
-```
-
-or on a VPS:
-
-```bash
-curl http://your-server-ip/health
-```
-
-## Running Without Docker Compose
-
-You can also build and run the Docker container manually.
-
-### Build the Docker Image
-
-```bash
-docker build -t vps-health-monitor .
-```
-
-### Run the Container
-
-```bash
-docker run -d \
-  --name vps-health-monitor \
-  -p 80:5000 \
-  vps-health-monitor
-```
-
-### Stop and Remove the Container
-
-```bash
-docker rm -f vps-health-monitor
-```
-
-## Docker Compose
-
-The project includes a `docker-compose.yml` file.
-
-The application runs inside a container named:
-
-```text
-vps-health-monitor
-```
-
-Docker Compose maps port `80` on the host to port `5000` inside the container.
-
-```yaml
-ports:
-  - "80:5000"
-```
-
-This means that the Flask app runs internally on port `5000`, but it is available from the outside on port `80`.
 
 Start the application:
 
@@ -189,126 +124,128 @@ Start the application:
 docker compose up -d --build
 ```
 
-Check running containers:
+Open in browser:
+
+```text
+http://localhost
+```
+
+or on a VPS/Raspberry Pi:
+
+```text
+http://your-server-ip
+```
+
+Check the health endpoint:
+
+```bash
+curl http://localhost/health
+```
+
+or:
+
+```bash
+curl http://your-server-ip/health
+```
+
+## Run with Docker
+
+Build the image:
+
+```bash
+docker build -t health-monitor .
+```
+
+Run the container:
+
+```bash
+docker run -d \
+  --name health-monitor \
+  -p 80:5000 \
+  health-monitor
+```
+
+Stop and remove the container:
+
+```bash
+docker rm -f health-monitor
+```
+
+## Docker Compose
+
+The application runs inside the container on port `5000`.
+
+Docker Compose exposes it on port `80` on the host machine:
+
+```text
+host port 80 → container port 5000
+```
+
+That means the application can be opened without adding `:5000` to the URL:
+
+```text
+http://your-server-ip
+```
+
+Useful commands:
+
+```bash
+docker compose up -d --build
+```
 
 ```bash
 docker ps
 ```
 
-View logs:
-
 ```bash
 docker compose logs -f
 ```
-
-Stop the application:
 
 ```bash
 docker compose down
 ```
 
-## Jenkins CI Pipeline
+## Jenkins Pipeline
 
-This project includes a `Jenkinsfile` with a basic CI pipeline.
+The repository contains a `Jenkinsfile`.
 
-The pipeline performs the following steps:
+The pipeline performs a basic CI check:
 
-1. Checks out the repository
-2. Creates a Python virtual environment
-3. Installs Python dependencies
-4. Checks Python syntax using `py_compile`
-5. Builds a Docker image
-6. Starts a test container
-7. Tests the `/health` endpoint using `curl`
-8. Removes the test container after the build
+1. gets the source code
+2. installs Python dependencies
+3. checks Python syntax
+4. builds the Docker image
+5. starts a test container
+6. checks the `/health` endpoint
+7. removes the test container
 
-The goal of the pipeline is to verify that the application can be built, started and tested automatically.
+The purpose of this pipeline is simple:  
+to check whether the application can be built, started and tested automatically.
 
-## Jenkins Pipeline Stages
+## Future Ideas
 
-### Checkout
+Things I may add later:
 
-Downloads the source code from the Git repository.
+- CPU usage
+- Raspberry Pi temperature
+- network usage
+- simple logs endpoint
+- better dashboard UI
+- alerts when RAM or disk usage is high
+- uptime history
+- checking other services running on the same server
+- GitHub Actions workflow
+- automatic deployment
+- Nginx reverse proxy
+- HTTPS
 
-### Install Dependencies and Check Python Syntax
+## Notes
 
-Creates a virtual environment, installs dependencies from `requirements.txt` and checks if `app.py` has correct Python syntax.
+This project was made as a small personal tool for checking server health.
 
-### Build Docker Image
-
-Builds a Docker image for the application.
-
-### Run Test Container
-
-Starts a temporary container from the newly built image.
-
-### Test Health Endpoint
-
-Checks if the application responds correctly on:
-
-```text
-/health
-```
-
-### Cleanup
-
-Removes the temporary test container after the pipeline finishes.
-
-## Example CI Test Command
-
-The Jenkins pipeline tests the health endpoint using:
-
-```bash
-curl --fail http://localhost:5000/health
-```
-
-If the endpoint does not respond correctly, the pipeline fails.
-
-## What I Learned
-
-During this project I practiced:
-
-- creating a simple Flask application
-- exposing HTTP endpoints
-- collecting basic system information with Python
-- writing a Dockerfile
-- building Docker images
-- running containers
-- using Docker Compose
-- exposing container ports
-- working with a Linux VPS
-- creating a Jenkins CI pipeline
-- testing a running service from a CI pipeline
-- using Git and GitHub for version control
-
-## Why This Project Was Created
-
-This project was created as a practical DevOps learning project.
-
-The main goal was not to build a complex monitoring system, but to understand the full basic workflow:
-
-```text
-code → Docker image → running container → healthcheck → CI pipeline
-```
-
-This helped me understand how an application can be packaged, started and automatically tested in a DevOps workflow.
-
-## Possible Future Improvements
-
-Possible next steps for this project:
-
-- add automated tests with `pytest`
-- add CPU usage monitoring
-- add logs endpoint
-- add environment variables for configuration
-- add GitHub Actions as an additional CI pipeline
-- add automatic deployment after a successful Jenkins build
-- add Prometheus metrics endpoint
-- add Grafana dashboard
-- add Nginx reverse proxy
-- add HTTPS with Let's Encrypt
-- add alerting when RAM or disk usage is too high
+It is simple on purpose.  
+The main goal is to have a lightweight dashboard and health endpoint that I can use on my VPS now and later on a Raspberry Pi or another small server.
 
 ## Author
 
-Created by Mateusz Futkowski as a practical DevOps learning project.
+Created by Mateusz Futkowski.
